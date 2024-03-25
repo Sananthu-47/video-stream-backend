@@ -24,6 +24,11 @@ app.use(express.urlencoded({extended: true}))
 app.use(express.static("public"))
 
 // For broweser cookie aprser
-app.use(cookieParser())
+app.use(cookieParser());
+
+// Api routes
+import userRoute from "./routes/user.routes.js";
+
+app.use('/api/v1/user',userRoute);
 
 export { app };
