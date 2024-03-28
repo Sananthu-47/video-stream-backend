@@ -3,6 +3,10 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
+import { ApiError } from "./utils/ApiError.js";
+import { ApiResponse } from "./utils/ApiResponse.js";
+import fs from "fs";
+
 // Create an express app
 const app = express();
 
@@ -29,6 +33,34 @@ app.use(cookieParser());
 // Api routes
 import userRoute from "./routes/user.routes.js";
 
+
 app.use('/api/v1/user',userRoute);
+
+
+app.use((err, req, res, next) => {
+
+    if(req.files && Array.isArray(req.files.avatar) && req.files.avatar.length > 0)
+        fs.unlinkSync(req.files.avatar[0].path);
+
+    if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0)
+        fs.unlinkSync(req.files.coverImage[0].path);
+    
+
+    // Default error status
+    let statusCode = err.status || 500;
+    
+    // If the error is a known ApiError, extract status code and message
+    if (err instanceof ApiError) {
+        statusCode = err.statusCode;
+    }
+    
+    // Log the error for debugging purposes
+    console.error(err);
+
+    // Send error response
+    return res.status(statusCode).json(
+        new ApiResponse(statusCode, err.data, err.message)
+    );
+});
 
 export { app };
