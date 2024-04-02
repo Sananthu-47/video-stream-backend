@@ -147,7 +147,7 @@ const userLogout = asyncHandler(async (req,res, next)=>{
     }
 });
 
-const userRefreshAccessToen = asyncHandler(async (req,res,next)=>{
+const userRefreshAccessToken = asyncHandler(async (req,res,next)=>{
     const incomingRefreshToken = req?.cookies?.refreshToken || req.body?.refreshToken;
 
     if(!incomingRefreshToken) throw new ApiError(401, "Missing refresh token");
@@ -200,6 +200,12 @@ const userChangePassword = asyncHandler(async (req,res,next)=>{
 
     return res.status(200)
     .json(new ApiResponse(200, {}, "Password changed successfully"));
+});
+
+const getCurrentUser = asyncHandler(async (req,res,next)=>{
+
+    return res.status(200)
+    .json(new ApiResponse(200, req.user, "User fetched successfully"));
 })
 
-export {userRegister, userLogin, userLogout, userRefreshAccessToen, userChangePassword};
+export {userRegister, userLogin, userLogout, userRefreshAccessToken, userChangePassword, getCurrentUser};
