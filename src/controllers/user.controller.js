@@ -182,6 +182,24 @@ const userRefreshAccessToen = asyncHandler(async (req,res,next)=>{
         throw new ApiError(401, error?.message || "Invalid message")
     }
 
+});
+
+const userChangePassword = asyncHandler(async (req,res,next)=>{
+    const {oldPassword, newPassword, confirmPassword} = req?.body;
+
+    const user = User.findById(req.user?._id);
+    if(!user) throw new ApiError(404, "User not found");
+
+    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
+    if(!isPasswordCorrect) throw new ApiError(400, "Old password is not correct");
+
+    if(newPassword !== confirmPassword) throw new ApiError(400, "New password & confirm password didnot match");
+
+    user.password = newPassword;
+    await user.save({validateBeforeSave: false});
+
+    return res.status(200)
+    .json(new ApiResponse(200, {}, "Password changed successfully"));
 })
 
-export {userRegister, userLogin, userLogout, userRefreshAccessToen};
+export {userRegister, userLogin, userLogout, userRefreshAccessToen, userChangePassword};
