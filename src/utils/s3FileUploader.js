@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { REGION, VIDEO_PROFILE_BUCKET } from "../constants.js";
 import fs from "fs";
 import path from "path";
@@ -41,4 +41,22 @@ const uploadImageToBucket = async (localFilePath, destination) => {
     }
 };
 
-export { uploadImageToBucket };
+const deleteBeforeUpload = async (key, destination) =>{
+    if(!key) return null;
+
+    const command = new DeleteObjectCommand({
+        Bucket: VIDEO_PROFILE_BUCKET,
+        Key: `${destination}/${key}`,
+    });
+
+    try {
+        const response = await s3.send(command);
+        return true;
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
+
+}
+
+export { uploadImageToBucket, deleteBeforeUpload };

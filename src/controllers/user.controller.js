@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
-import { uploadImageToBucket } from "../utils/s3FileUploader.js";
+import { uploadImageToBucket, deleteBeforeUpload } from "../utils/s3FileUploader.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 
@@ -278,6 +278,9 @@ const userAvatarImageUpdate = asyncHandler(async (req,res,next)=>{
     const avatar = await uploadImageToBucket(avatarPath,"avatars");
     if(!avatar) throw new ApiError(400, "Error while uploading the avatar");
 
+    const deleted = await deleteBeforeUpload(req.user?.avatar,"avatars");
+    if(!deleted) throw new ApiError(400, "Error while updating avatar"); 
+
     const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
@@ -297,6 +300,9 @@ const userCoverImageUpdate = asyncHandler(async (req,res,next)=>{
 
     const coverImage = await uploadImageToBucket(coverPath,"cover-images");
     if(!coverImage) throw new ApiError(400, "Error while uploading the cover image");
+
+    const deleted = await deleteBeforeUpload(req.user?.coverImage,"cover-images");
+    if(!deleted) throw new ApiError(400, "Error while updating cover image"); 
 
     const user = await User.findByIdAndUpdate(
         req.user?._id,
