@@ -25,10 +25,10 @@ router.route('/refresh-access-token').post(userRefreshAccessToken);
 
 router.route('/get-current-user').get(verifyJwt,getCurrentUser);
 
-router.route("/update-profile-details").put(verifyJwt, userUpdateProfileDetails);
+router.route("/update-profile-details").patch(verifyJwt, userUpdateProfileDetails);
 
-router.route("/update-user-avatar-image").post(verifyJwt,upload.single("avatar"),userAvatarImageUpdate);
+router.route("/update-user-avatar-image").patch(verifyJwt,upload.single("avatar"),userAvatarImageUpdate);
 
-router.route("/update-user-cover-image").post(verifyJwt,upload.single("coverImage"),userCoverImageUpdate);
+router.route("/update-user-cover-image").patch(verifyJwt,upload.single("coverImage"),userCoverImageUpdate);
 
 export default router;
