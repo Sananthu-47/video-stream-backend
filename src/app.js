@@ -32,9 +32,12 @@ app.use(cookieParser());
 
 // Api routes
 import userRoute from "./routes/user.routes.js";
+import videoRoute from "./routes/video.routes.js";
 
 
 app.use('/api/v1/user',userRoute);
+
+app.use('/api/v1/video',videoRoute);
 
 
 app.use((err, req, res, next) => {

@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
-import { uploadImageToBucket, deleteBeforeUpload } from "../utils/s3FileUploader.js";
+import { uploadFileToBucket, deleteBeforeUpload } from "../utils/s3FileUploader.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 
@@ -57,8 +57,8 @@ const userRegister = asyncHandler(async (req, res, next) => {
 
         if (!avatarPath) throw new ApiError(400, "Avatar field is required");
 
-        const avatarImage = await uploadImageToBucket(avatarPath, "avatars");
-        const coverImage = await uploadImageToBucket(
+        const avatarImage = await uploadFileToBucket(avatarPath, "avatars");
+        const coverImage = await uploadFileToBucket(
             coverImagePath,
             "cover-images",
         );
@@ -275,7 +275,7 @@ const userAvatarImageUpdate = asyncHandler(async (req,res,next)=>{
     if (!req.file || !req.file?.path) throw new ApiError(400, "Avatar image is required");
     const avatarPath = req.file.path;
 
-    const avatar = await uploadImageToBucket(avatarPath,"avatars");
+    const avatar = await uploadFileToBucket(avatarPath,"avatars");
     if(!avatar) throw new ApiError(400, "Error while uploading the avatar");
 
     const deleted = await deleteBeforeUpload(req.user?.avatar,"avatars");
@@ -298,7 +298,7 @@ const userCoverImageUpdate = asyncHandler(async (req,res,next)=>{
     if (!req.file || !req.file?.path) throw new ApiError(400, "Cover image is required");
     const coverPath = req.file.path;
 
-    const coverImage = await uploadImageToBucket(coverPath,"cover-images");
+    const coverImage = await uploadFileToBucket(coverPath,"cover-images");
     if(!coverImage) throw new ApiError(400, "Error while uploading the cover image");
 
     const deleted = await deleteBeforeUpload(req.user?.coverImage,"cover-images");
@@ -374,8 +374,6 @@ const userChannelProfile = asyncHandler(async (req,res)=>{
             }
         }
     ]);
-
-    console.log(channel);
 
     if(!channel?.length) throw new ApiError(404, "Channel not found")
 
