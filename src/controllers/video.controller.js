@@ -1,9 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
-import { User } from "../models/user.model.js";
 import { uploadFileToBucket } from "../utils/s3FileUploader.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import jwt from "jsonwebtoken";
 import { Video } from "../models/video.model.js";
 
 const publishVideo = asyncHandler(async (req,res)=>{
@@ -38,8 +36,6 @@ const publishVideo = asyncHandler(async (req,res)=>{
     const thumbnail = await uploadFileToBucket(thumbnailPath, "thumbnails");
     if (!thumbnail) throw new ApiError(400, "Thumbnail is required");
 
-    
-
     const video = await Video.create({
         title,
         description,
@@ -61,10 +57,29 @@ const publishVideo = asyncHandler(async (req,res)=>{
                 "Video uploaded successfully",
             ),
         );
+});
+
+const getVideoById = asyncHandler(async (req, res) => {
+    const { videoId } = req.params;
+    if(!videoId) throw new ApiError(400,"Video id is missing");
+        try{
+            const video = await Video.findById(videoId);
+            console.log(video);
+            if(!video) throw new ApiError(404,"Video not found");
+            return res
+            .status(200)
+            .json(
+                new ApiResponse(200,video,"Video found successfully")
+            );
+        }
+        catch(err){
+            throw new ApiError(400, "Error: " + err.reason);
+        }
 })
 
 export {
-    publishVideo
+    publishVideo,
+    getVideoById
 };
 
 
