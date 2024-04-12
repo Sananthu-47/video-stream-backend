@@ -42,6 +42,7 @@ const publishVideo = asyncHandler(async (req,res)=>{
         videoFileUrl: videoFile.url,
         thumbnail: thumbnail.url,
         duration: videoFile.duration,
+        isPublished: true,
         owner: req.user._id
     });
 
@@ -64,7 +65,6 @@ const getVideoById = asyncHandler(async (req, res) => {
     if(!videoId) throw new ApiError(400,"Video id is missing");
         try{
             const video = await Video.findById(videoId);
-            console.log(video);
             if(!video) throw new ApiError(404,"Video not found");
             return res
             .status(200)
@@ -75,11 +75,38 @@ const getVideoById = asyncHandler(async (req, res) => {
         catch(err){
             throw new ApiError(400, "Error: " + err.reason);
         }
+});
+
+const togglePublishStatus = asyncHandler(async (req, res) => {
+    const { videoId, status } = req.params;
+    if(!videoId) throw new ApiError(404, "Video id is missing");
+    if(!status) throw new ApiError(400, "Status is missing");
+
+    try{
+        const video = await Video.findByIdAndUpdate(videoId,{
+            $set: {
+                isPublished: status
+            }
+        },
+        {
+            new: true
+        });
+
+        if(!video) throw new ApiError(400, "Video status couldn't be updated");
+        return res
+        .status(200)
+        .json(
+            new ApiResponse(200,video,"Video status changed successfully")
+        )
+    }catch(err){
+        throw new ApiError(400, "Error: "+err);
+    }
 })
 
 export {
     publishVideo,
-    getVideoById
+    getVideoById,
+    togglePublishStatus
 };
 
 
