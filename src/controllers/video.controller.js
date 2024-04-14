@@ -1,6 +1,6 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
-import { uploadFileToBucket } from "../utils/s3FileUploader.js";
+import { deleteBeforeUpload, uploadFileToBucket } from "../utils/s3FileUploader.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Video } from "../models/video.model.js";
 
@@ -131,11 +131,40 @@ const updateVideo = asyncHandler(async (req, res) => {
     );
 });
 
+const updateVideoThumbnail = asyncHandler(async (req, res)=>{
+    const {videoId} = req.params;
+    if(!videoId) throw new ApiError(400, "Video Id is not found");
+
+    const videoThumbnailOld = await Video.findById(videoId).select('thumbnail');
+    if(!videoThumbnailOld) throw new ApiError(400, "Video details is not fetched");
+
+    if (!req.file || !req.file?.path) throw new ApiError(400, "Thumbnail is required");
+    const thumbnailPath = req.file.path;
+
+    const thumbnail = await uploadFileToBucket(thumbnailPath,"thumbnails");
+    if(!thumbnail) throw new ApiError(400, "Error while updating the thumbnail");
+
+    const deleted = await deleteBeforeUpload(videoThumbnailOld.thumbnail,"thumbnails");
+    if(!deleted) throw new ApiError(400, "Error while deleting old thumbnail"); 
+
+    const video = await Video.findByIdAndUpdate(
+        videoId,
+        {
+            $set: {thumbnail : thumbnail?.url}
+        },
+        {new: true}
+    );
+
+    return res.status(200)
+    .json(new ApiResponse(200,video,"Thumbnail updated successfully"));
+})
+
 export {
     publishVideo,
     getVideoById,
     togglePublishStatus,
-    updateVideo
+    updateVideo,
+    updateVideoThumbnail
 };
 
 
