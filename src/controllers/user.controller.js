@@ -225,10 +225,11 @@ const userRefreshAccessToken = asyncHandler(async (req, res, next) => {
 const userChangePassword = asyncHandler(async (req, res, next) => {
     const { oldPassword, newPassword, confirmPassword } = req?.body;
 
-    const user = User.findById(req.user?._id);
+    const user = await User.findById(req.user?._id);
     if (!user) throw new ApiError(404, "User not found");
 
-    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
+    const isPasswordCorrect = await user?.isPasswordCorrect(oldPassword.toString());
+
     if (!isPasswordCorrect)
         throw new ApiError(400, "Old password is not correct");
 

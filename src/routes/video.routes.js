@@ -19,8 +19,8 @@ router.route('/publish-video').post(verifyJwt,
 
 router.route('/get-video-by-id/:videoId').get(getVideoById);
 
-router.route('/update-video-status/:videoId/:status').put(verifyJwt,togglePublishStatus);
+router.route('/update-video-status/:videoId/:status').patch(verifyJwt,togglePublishStatus);
 
-router.route('/update-video-details/:videoId').put(verifyJwt,updateVideo);
+router.route('/update-video-details/:videoId').patch(verifyJwt,updateVideo);
 
 export default router;
