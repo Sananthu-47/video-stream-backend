@@ -101,12 +101,41 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
     }catch(err){
         throw new ApiError(400, "Error: "+err);
     }
-})
+});
+
+const updateVideo = asyncHandler(async (req, res) => {
+    const { videoId } = req.params
+    const { title, description} = req.body;
+
+    if(!videoId) throw new ApiError(400, "Video id is missing");
+
+    if(!title) throw new ApiError(400, "Title is mandatory to be filled");
+
+    const video = await Video.findByIdAndUpdate(
+        videoId,
+        {
+            $set: {
+                title,
+                description
+            }
+        },
+        { new: true },
+    );
+
+    if(!video) throw new ApiError(400, "Error while updating video details");
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, video, "Video updated successfully")
+    );
+});
 
 export {
     publishVideo,
     getVideoById,
-    togglePublishStatus
+    togglePublishStatus,
+    updateVideo
 };
 
 
