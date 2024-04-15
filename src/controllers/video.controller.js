@@ -157,14 +157,40 @@ const updateVideoThumbnail = asyncHandler(async (req, res)=>{
 
     return res.status(200)
     .json(new ApiResponse(200,video,"Thumbnail updated successfully"));
-})
+});
+
+const deleteVideo = asyncHandler(async (req, res) => {
+    const { videoId } = req.params;
+    if(!videoId) throw new ApiError(400, "Video Id is missing");
+
+    const video = await Video.findByIdAndDelete(videoId);
+    if(!video) throw new ApiError(400, "Video id is not found or not able to delete");
+
+    const thumbnailDeleted = await deleteBeforeUpload(video.thumbnail,"thumbnails");
+    if(!thumbnailDeleted) throw new ApiError(400, "Error while deleting thumbnail"); 
+
+    const videoDeleted = await deleteBeforeUpload(video.videoFileUrl,"videos");
+    if(!videoDeleted) throw new ApiError(400, "Error while deleting video"); 
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200, video, "Video deleted successfully"));
+
+});
+
+const getAllVideos = asyncHandler(async (req, res) => {
+    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
+
+});
 
 export {
     publishVideo,
     getVideoById,
     togglePublishStatus,
     updateVideo,
-    updateVideoThumbnail
+    updateVideoThumbnail,
+    deleteVideo,
+    getAllVideos
 };
 
 
