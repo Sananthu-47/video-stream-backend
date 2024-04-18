@@ -188,6 +188,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
     const videos = await Video.aggregate([
         [
+            // Lookup will join the users table and check for the userid
             {
               $lookup: {
                 from: "users",
@@ -196,6 +197,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
                 as: "user_info"
               }
             },
+            // Match will filter based on userid & if it is published
             {
               $match: {
                 $and: [
@@ -204,6 +206,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
                 ]
               }
             },
+            // Project will act as the return type of ouput, what all to return in response
             {
               $project: {
                 thumbnail: 1,
@@ -215,14 +218,17 @@ const getAllVideos = asyncHandler(async (req, res) => {
                 createdAt: 1
               }
             },
+            // Sort based on the parameter for example: createdAt: 1 means, order videos in ascending order oldest to newest
             {
                 $sort: {
                     [sortBy] : Number(sortType)
                 }
             },
+            // Skip act as the start point of pagination, for example page is 1 then limit is say 10, then 1 * 10 it will start from 10th video
             {
               $skip: page * limit
             },
+            // Limit fetchs so many documents from the start point
             {
               $limit: limit
             }
