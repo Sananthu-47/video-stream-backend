@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { deleteBeforeUpload, uploadFileToBucket } from "../utils/s3FileUploader.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Video } from "../models/video.model.js";
+import mongoose, { Mongoose, Schema } from "mongoose";
 
 const publishVideo = asyncHandler(async (req,res)=>{
     const {title, description} = req.body;
@@ -179,8 +180,60 @@ const deleteVideo = asyncHandler(async (req, res) => {
 });
 
 const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
+    const { page = 0, limit = 10, query, sortBy = "createdAt", sortType = 1, userId } = req.query;
 
+    if(!userId) throw new ApiError(400, "Channel id is required");
+
+    const channelId = new mongoose.Types.ObjectId(userId);
+
+    const videos = await Video.aggregate([
+        [
+            {
+              $lookup: {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "user_info"
+              }
+            },
+            {
+              $match: {
+                $and: [
+                    {"user_info._id": channelId},
+                    {"isPublished": true}
+                ]
+              }
+            },
+            {
+              $project: {
+                thumbnail: 1,
+                title: 1,
+                duration: 1,
+                views: 1,
+                username: { "$arrayElemAt": ["$user_info.username", 0] },
+                user_avatar: { "$arrayElemAt": ["$user_info.avatar", 0] },
+                createdAt: 1
+              }
+            },
+            {
+                $sort: {
+                    [sortBy] : Number(sortType)
+                }
+            },
+            {
+              $skip: page * limit
+            },
+            {
+              $limit: limit
+            }
+          ]
+    ]);
+
+    if(!videos) throw new ApiError(400, "No videos found");
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200,videos,"Videos fetched successfully"));
 });
 
 export {
