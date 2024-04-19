@@ -33,11 +33,14 @@ app.use(cookieParser());
 // Api routes
 import userRoute from "./routes/user.routes.js";
 import videoRoute from "./routes/video.routes.js";
+import subscriptionRoute from "./routes/subscription.routes.js";
 
 
 app.use('/api/v1/user',userRoute);
 
 app.use('/api/v1/video',videoRoute);
+
+app.use('/api/v1/subscription',subscriptionRoute);
 
 
 app.use((err, req, res, next) => {

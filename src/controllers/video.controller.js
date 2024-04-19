@@ -3,7 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { deleteBeforeUpload, uploadFileToBucket } from "../utils/s3FileUploader.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Video } from "../models/video.model.js";
-import mongoose, { Mongoose, Schema } from "mongoose";
+import mongoose from "mongoose";
 
 const publishVideo = asyncHandler(async (req,res)=>{
     const {title, description} = req.body;
