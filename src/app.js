@@ -36,6 +36,7 @@ import videoRoute from "./routes/video.routes.js";
 import subscriptionRoute from "./routes/subscription.routes.js";
 import likeRoute from "./routes/like.routes.js";
 import commentRoute from "./routes/comment.routes.js";
+import playlistRoute from "./routes/playlist.routes.js";
 
 
 app.use('/api/v1/user',userRoute);
@@ -47,6 +48,8 @@ app.use('/api/v1/subscription',subscriptionRoute);
 app.use('/api/v1/like',likeRoute);
 
 app.use('/api/v1/comment',commentRoute);
+
+app.use('/api/v1/playlist',playlistRoute);
 
 
 app.use((err, req, res, next) => {
