@@ -125,10 +125,19 @@ const getAllVideoComments = asyncHandler(async (req, res, next) => {
                 },
             },
             {
+                $lookup: {
+                    from: "likes",
+                    localField: "_id",
+                    foreignField: "commentId",
+                    as: "commentLikes"
+                }
+            },
+            {
                 $project: {
                     comment: 1,
                     videoId: 1,
                     repliesCount: { $size: "$replies" },
+                    commentLikesCount: { $size: "$commentLikes" },
                     username: { $arrayElemAt: ["$user.username", 0] },
                     avatar: { $arrayElemAt: ["$user.avatar", 0] },
                 },
