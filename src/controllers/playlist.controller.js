@@ -30,6 +30,114 @@ const createPlaylist = asyncHandler(async (req,res,next)=>{
     }
 });
 
+const getUserPlaylists = asyncHandler(async (req, res, next) => {
+    try {
+        const {userId} = req.params
+        if(!userId) throw new ApiError(400, "User Id is missing");
+    
+        const playlist = await Playlist.find({
+            owner: userId
+        });
+    
+        if(playlist.length == 0){
+            return res
+            .status(200)
+            .json(new ApiResponse(200, playlist, "No playlist found"));
+        }else{
+            return res
+            .status(200)
+            .json(new ApiResponse(200, playlist, "Playlist found"));
+        }
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+})
+
+const getPlaylistById = asyncHandler(async (req, res, next) => {
+    try {
+        const {playlistId} = req.params
+        if(!playlistId) throw new ApiError(400, "Playlist Id is missing");
+    
+        const playlist = await Playlist.find({
+            _id: playlistId
+        });
+    
+        if(playlist.length == 0){
+            return res
+            .status(200)
+            .json(new ApiResponse(200, playlist, "No playlist found"));
+        }else{
+            return res
+            .status(200)
+            .json(new ApiResponse(200, playlist, "Playlist found"));
+        }
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+})
+
+const addVideoToPlaylist = asyncHandler(async (req, res, next) => {
+    try {
+        const {playlistId} = req.params;
+        const {videos} = req.body;
+        if(!playlistId) throw new ApiError(400, "Playlist Id is missing");
+        if(videos.length == 0) throw new ApiError(400, "Videos are missing");
+        if(!req?.user?._id) throw new ApiError(400, "Please login to add video to playlist");
+    
+        const playlist = await Playlist.findOneAndUpdate({
+            _id: playlistId
+        },{
+            $addToSet : {
+                videos
+            }
+        },{
+            returnOriginal: false
+        });
+    
+        if(!playlist) throw new ApiError(400, "Error while updating the playlist");
+
+        return res
+        .status(200)
+        .json(new ApiResponse(200, playlist, "Video added to playlist"));
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+})
+
+const removeVideoFromPlaylist = asyncHandler(async (req, res, next) => {
+    const {playlistId, videoId} = req.params
+    // TODO: remove video from playlist
+
+})
+
+const deletePlaylist = asyncHandler(async (req, res, next) => {
+    try {
+        const {playlistId} = req.params;
+        if(!playlistId) throw new ApiError(400, "Playlist Id is missing");
+        if(!req.user?._id) throw new ApiError(400, "Please login to delete the playlist");
+    
+        const playlist = await Playlist.findByIdAndDelete({
+            _id: playlistId
+        });
+    
+        if(!playlist) throw new ApiError(400, "Error while deleting the playlist");
+        return res
+        .status(200)
+        .json(new ApiResponse(200, playlist, "Playlist deleted succesfully"));
+        
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+})
+
 export {
     createPlaylist,
+    getUserPlaylists,
+    getPlaylistById,
+    addVideoToPlaylist,
+    deletePlaylist
 };
