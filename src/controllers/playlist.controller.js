@@ -58,7 +58,8 @@ const getPlaylistById = asyncHandler(async (req, res, next) => {
     try {
         const {playlistId} = req.params
         if(!playlistId) throw new ApiError(400, "Playlist Id is missing");
-    
+
+        const userId = req.user?._id;
         const playlist = await Playlist.find({
             _id: playlistId
         });
@@ -108,9 +109,27 @@ const addVideoToPlaylist = asyncHandler(async (req, res, next) => {
 })
 
 const removeVideoFromPlaylist = asyncHandler(async (req, res, next) => {
-    const {playlistId, videoId} = req.params
-    // TODO: remove video from playlist
+    try {
+        const {playlistId, videoId} = req.params;
+        if(!playlistId) throw new ApiError(400, "Playlist Id is missing");
+        if(!videoId) throw new ApiError(400, "Video Id is missing");
 
+        if(!req?.user?._id) throw new ApiError(400, "Please login to delete video from playlist");
+    
+        const playlist = await Playlist.updateOne(
+            { _id: playlistId },
+            { $pull: { videos : videoId } }
+        );
+    
+        if(!playlist) throw new ApiError(400, "Error while deleting video from the playlist");
+
+        return res
+        .status(200)
+        .json(new ApiResponse(200, playlist, "Video deleted from playlist"));
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
 })
 
 const deletePlaylist = asyncHandler(async (req, res, next) => {
@@ -139,5 +158,6 @@ export {
     getUserPlaylists,
     getPlaylistById,
     addVideoToPlaylist,
-    deletePlaylist
+    deletePlaylist,
+    removeVideoFromPlaylist
 };
