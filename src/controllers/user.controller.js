@@ -4,9 +4,7 @@ import { User } from "../models/user.model.js";
 import { uploadFileToBucket, deleteBeforeUpload } from "../utils/s3FileUploader.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
-import { VERIFIED_SENDGRID_EMAIL } from "../constants.js";
-import sgMail  from '@sendgrid/mail';
-sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+import { sendEmail } from "../utils/sendEmailHandler.js";
 
 const getAccessAndRefreshToken = async (userId) => {
     try {
@@ -84,17 +82,16 @@ const userRegister = asyncHandler(async (req, res, next) => {
         if (!createdUser)
             throw new ApiError(500, "Something went wrong while creating user");
 
-        const msg = {
-            to: email,
-            from: VERIFIED_SENDGRID_EMAIL,
-            subject: 'Welcome to new Video streaming platform',
-            text: 'Thank you for registering into Video stream, hope you have fun',
-            html: '<h3>Thank you for registering into <i>Video stream</i>, hope you have fun</h3>',
-          };
+        const sendEmailToUser = await sendEmail(
+            email,
+            "Welcome to new Video streaming platform",
+            "Thank you for registering into Video stream, hope you have fun",
+            "<h3>Thank you for registering into <i>Video stream</i>, hope you have fun</h3>"
+        );
 
-        sgMail.send(msg)
-        .then(()=> console.log("Email sent succesfully"))
-        .catch((err)=> console.log("Error while sending an email to registered email "+ err))
+        if(!sendEmailToUser) throw new ApiError(400, "Error while sending email to registered user");
+
+        console.log(sendEmailToUser);
 
         return res
             .status(201)
